@@ -10,7 +10,9 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Clone .env.template to .env and change the ip address
+
+3. Start the app
 
    ```bash
     npx expo start
@@ -48,4 +50,5 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
 # chain-sentinel-frontend

@@ -10,7 +10,7 @@ export interface AuthRepsonse {
   token: string;
 }
 
-const returnUserToke = (data: AuthRepsonse) => {
+const returnUserToke = (data: AuthRepsonse): { user: User; token: string } => {
   //   const { id, email, fullName, isActive, roles, token } = data;
   const { token, ...user } = data;
 
@@ -42,7 +42,9 @@ export const authLogin = async (email: string, password: string) => {
 
 export const authCkeckStatus = async () => {
   try {
-    const { data } = await chainSentinelApi.get<AuthRepsonse>("/auth/status");
+    const { data } = await chainSentinelApi.get<AuthRepsonse>(
+      "/auth/check-status"
+    );
 
     return returnUserToke(data);
   } catch (error) {
@@ -51,4 +53,4 @@ export const authCkeckStatus = async () => {
   }
 };
 
-//TODO : Hacer el register
+//TODO : Make el register
