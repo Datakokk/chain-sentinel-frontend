@@ -1,3 +1,4 @@
+import { SecureStorageAdapter } from "@/helpers/adapters/secure-storage.adapters";
 import axios from "axios";
 import { Platform } from "react-native";
 
@@ -11,12 +12,23 @@ export const API_URL =
     ? process.env.EXPO_PUBLIC_API_URL_IOS
     : process.env.EXPO_PUBLIC_API_URL_ANDROID;
 
-console.log({ STAGE, [Platform.OS]: API_URL });
-
 const chainSentinelApi = axios.create({
   baseURL: API_URL,
 });
 
-// TODO interceptors
-
+// Interceptor to add the token to the request
+chainSentinelApi.interceptors.request.use(
+  async (config) => {
+    // Verify if  we havea a token in the secure storage
+    const token = await SecureStorageAdapter.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    // Handle request error
+    return Promise.reject(error);
+  }
+);
 export { chainSentinelApi };
