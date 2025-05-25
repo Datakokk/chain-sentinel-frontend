@@ -1,6 +1,7 @@
 // app/chain-sentinel-app/(home)/pagina4.tsx
 import { View, Text, Button } from "react-native";
 import { Stack, useRouter } from "expo-router";
+import BottomNavBar from "./components/BottomNavBar";
 
 export default function Pagina4() {
   const router = useRouter();
@@ -10,6 +11,8 @@ export default function Pagina4() {
       <Stack.Screen options={{ title: "Página 4" }} />
       <Text>Página 4</Text>
       <Button title="Volver al Home" onPress={() => router.back()} />
+      {/* BARRA INFERIOR */}
+      <BottomNavBar />
     </View>
   );
 }
