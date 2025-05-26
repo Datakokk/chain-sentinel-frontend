@@ -13,7 +13,7 @@ const HomeScreen = () => {
   const { alerts } = useAlerts();
 
   const suspiciousTxExists = transactions.some(
-    (tx) => tx.status === "Sospechoso"
+    (tx) => tx.status === "suspicious"
   );
 
   return (
@@ -67,25 +67,26 @@ const HomeScreen = () => {
           </Text>
         ) : (
           transactions.slice(0, 5).map((tx) => (
-            <Card key={tx.id} style={styles.card}>
+            <Card key={tx.hash} style={styles.card}>
               <Card.Content style={styles.cardContent}>
                 <Text style={{ fontWeight: "bold", color: "#fff" }}>
                   {tx.hash}
                 </Text>
                 <Text style={{ color: "#fff" }}>
-                  {tx.date} · {tx.amount}
+                  {new Date(tx.timestamp * 1000).toISOString().split("T")[0]} ·{" "}
+                  {tx.value} ETH
                 </Text>
                 <Chip
                   style={[
                     styles.chip,
                     {
                       backgroundColor:
-                        tx.status === "Sospechoso" ? "#c62828" : "#2e7d32",
+                        tx.status === "suspicious" ? "#c62828" : "#2e7d32",
                     },
                   ]}
                   textStyle={{ color: "#fff" }}
                 >
-                  {tx.status}
+                  {tx.status === "suspicious" ? "Sospechoso" : "Seguro"}
                 </Chip>
               </Card.Content>
             </Card>
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 10,
     paddingHorizontal: 20,
-    paddingBottom: 100, // espacio para la barra inferior
+    paddingBottom: 100,
     alignItems: "center",
   },
   headerRow: {
@@ -122,27 +123,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
-
   logoSmall: {
     width: 100,
     height: 100,
   },
-
   brandTitle: {
     fontSize: 24,
     fontWeight: "bold",
     marginLeft: 0,
-    color: "#00e0c6", // color turquesa tipo mockup
+    color: "#00e0c6",
   },
-
   subtitle: {
     textAlign: "center",
     marginBottom: 30,
     color: "#fff",
-  },
-  button: {
-    marginVertical: 6,
-    width: "100%",
   },
   sectionTitle: {
     marginTop: 30,
@@ -182,18 +176,6 @@ const styles = StyleSheet.create({
     color: "red",
     textAlign: "center",
     fontWeight: "bold",
-  },
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#444",
-    backgroundColor: "#000",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
   },
 });
 

@@ -1,63 +1,70 @@
 import { useEffect, useState } from "react";
 import { useUser } from "./useUser";
 import { useAuthStore } from "@/presentation/auth/store/useAuthStore";
-
-interface Transaction {
-  id: string;
-  hash: string;
-  date: string;
-  amount: string;
-  status: "Sospechoso" | "Seguro";
-  [key: string]: any;
-}
+import { Transaction } from "@/core/transactions/interface/transaction";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const useUserTransactions = () => {
   const { token } = useAuthStore();
-  const { user, loading: userLoading, error } = useUser();
+  const { user, loading: userLoading, error: userError } = useUser();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("✅ useUserTransactions hook mounted");
+
+    if (userLoading) {
+      console.log("⏳ Esperando a que cargue el usuario...");
+      return;
+    }
+
+    if (!token || !user?.wallet_address || !API_URL) {
+      console.warn("⛔ Falta token, wallet_address o API_URL", {
+        token,
+        wallet_address: user?.wallet_address,
+        API_URL,
+      });
+      setLoading(false);
+      return;
+    }
+
     const fetchTransactions = async () => {
-      if (!token || !user?.wallet_address || !API_URL) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const res = await fetch(
-          `${API_URL}/api/v1/transactions/${user.wallet_address}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const url = `${API_URL}/api/v1/transactions/${user.wallet_address}`;
+        console.log("🚀 GET:", url);
 
-        if (!res.ok) throw new Error("Failed to fetch transactions");
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-        const data = await res.json();
+        if (!res.ok) {
+          const errMsg = await res.text();
+          throw new Error(`Error ${res.status}: ${errMsg}`);
+        }
+
+        const data: Transaction[] = await res.json();
+        console.log("✅ Transacciones recibidas:", data);
         setTransactions(data);
       } catch (err: any) {
+        console.error("❌ Error al cargar transacciones:", err.message);
         setFetchError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (!userLoading && user?.wallet_address) {
-      fetchTransactions();
-    }
-  }, [token, user, userLoading]);
+    fetchTransactions();
+  }, [token, user?.wallet_address, userLoading]);
 
   return {
     transactions,
     loading: loading || userLoading,
-    error: fetchError || error,
+    error: fetchError || userError,
   };
 };

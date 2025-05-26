@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/presentation/auth/store/useAuthStore";
 import type { User } from "@/core/auth/interface/user";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -12,9 +14,19 @@ export const useUser = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      if (!token || !API_URL) {
+      console.log("🔎 Verificando token y API_URL", { token, API_URL });
+
+      if (!token) {
+        console.warn("⛔ No token disponible");
+        setError("No token available");
         setLoading(false);
-        setError("No token or API URL available");
+        return;
+      }
+
+      if (!API_URL) {
+        console.warn("⛔ No API_URL disponible");
+        setError("No API URL available");
+        setLoading(false);
         return;
       }
 
@@ -29,11 +41,25 @@ export const useUser = () => {
         if (!res.ok) throw new Error("Failed to fetch user");
 
         const userData = await res.json();
-        setFetchedUser(userData);
 
-        await changeStatus(token, userData);
+        const userRef = doc(db, "users", userData.id);
+        const userSnap = await getDoc(userRef);
+        const firestoreData = userSnap.exists() ? userSnap.data() : {};
+
+        console.log("📦 Firestore data:", firestoreData);
+        console.log("🔑 Backend user:", userData);
+
+        const enrichedUser: User = {
+          ...firestoreData,
+          ...userData,
+        };
+
+        console.log("👤 Enriched user with wallet:", enrichedUser);
+
+        setFetchedUser(enrichedUser);
+        await changeStatus(token, enrichedUser);
       } catch (err: any) {
-        console.error("useUser error:", err.message);
+        console.error("❌ useUser error:", err.message);
         setError(err.message);
       } finally {
         setLoading(false);
