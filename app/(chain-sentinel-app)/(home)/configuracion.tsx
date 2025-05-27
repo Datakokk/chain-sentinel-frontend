@@ -1,11 +1,18 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Button } from "react-native-paper";
+import { useNavigation } from "expo-router";
+import { useEffect } from "react";
 import { useAuthStore } from "@/presentation/auth/store/useAuthStore";
 import BottomNavBar from "./components/BottomNavBar";
 
 const ConfiguracionScreen = () => {
   const logout = useAuthStore((state) => state.logout);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ title: "Configuración" });
+  }, []);
 
   const handleLogout = async () => {
     await logout();

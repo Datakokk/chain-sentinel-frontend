@@ -14,13 +14,13 @@ const BottomNavBar = () => {
 
   const iconItems = [
     { name: "home", label: "Home", route: "/" },
-    { name: "search", label: "Consultar", route: "/pagina1" },
+    { name: "search", label: "Consultar", route: "/consulta" },
     { name: "analytics", label: "Análisis", route: "/pagina2" },
     { name: "notifications", label: "Alertas", route: "/pagina3", badge: true },
     { name: "settings", label: "Configuración", route: "/configuracion" },
   ];
 
-  type Route = "/" | "/pagina1" | "/pagina2" | "/pagina3" | "/configuracion";
+  type Route = "/" | "/consulta" | "/pagina2" | "/pagina3" | "/configuracion";
 
   return (
     <View style={styles.navbar}>
