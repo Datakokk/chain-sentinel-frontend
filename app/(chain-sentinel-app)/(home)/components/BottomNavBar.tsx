@@ -17,10 +17,10 @@ const BottomNavBar = () => {
     { name: "search", label: "Consultar", route: "/pagina1" },
     { name: "analytics", label: "Análisis", route: "/pagina2" },
     { name: "notifications", label: "Alertas", route: "/pagina3", badge: true },
-    { name: "settings", label: "Configuración", route: "/pagina4" },
+    { name: "settings", label: "Configuración", route: "/configuracion" },
   ];
 
-  type Route = "/" | "/pagina1" | "/pagina2" | "/pagina3" | "/pagina4";
+  type Route = "/" | "/pagina1" | "/pagina2" | "/pagina3" | "/configuracion";
 
   return (
     <View style={styles.navbar}>

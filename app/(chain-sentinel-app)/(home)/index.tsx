@@ -4,17 +4,26 @@ import { Text, Button, Card, Chip, useTheme } from "react-native-paper";
 import BottomNavBar from "./components/BottomNavBar";
 import { useUserTransactions } from "@/core/auth/hooks/useUserTransactions";
 import { useAlerts } from "@/core/alerts/hooks/useAlerts";
+import WalletInput from "@/presentation/theme/components/ui/WalletInput";
 
 const HomeScreen = () => {
   const theme = useTheme();
   const [period, setPeriod] = useState("7");
 
-  const { transactions, loading } = useUserTransactions();
+  const [reloadKey, setReloadKey] = useState(0);
+  const { transactions, loading } = useUserTransactions(reloadKey);
   const { alerts } = useAlerts();
 
   const suspiciousTxExists = transactions.some(
     (tx) => tx.status === "suspicious"
   );
+
+  const filteredTransactions = transactions.filter((tx) => {
+    const txDate = new Date(tx.timestamp * 1000);
+    const now = new Date();
+    const diffDays = (now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24);
+    return period === "7" ? diffDays <= 7 : diffDays <= 30;
+  });
 
   return (
     <View style={styles.root}>
@@ -31,6 +40,9 @@ const HomeScreen = () => {
         <Text variant="titleMedium" style={styles.subtitle}>
           Monitoreo Inteligente de Fraude en Blockchain
         </Text>
+
+        {/* Componente para ingresar wallet */}
+        <WalletInput onWalletSaved={() => setReloadKey((prev) => prev + 1)} />
 
         {/* RESUMEN DE ACTIVIDAD */}
         <Text variant="titleLarge" style={styles.sectionTitle}>
@@ -66,7 +78,7 @@ const HomeScreen = () => {
             No hay transacciones disponibles
           </Text>
         ) : (
-          transactions.slice(0, 5).map((tx) => (
+          filteredTransactions.slice(0, 5).map((tx) => (
             <Card key={tx.hash} style={styles.card}>
               <Card.Content style={styles.cardContent}>
                 <Text style={{ fontWeight: "bold", color: "#fff" }}>

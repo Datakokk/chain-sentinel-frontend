@@ -5,9 +5,9 @@ import { Transaction } from "@/core/transactions/interface/transaction";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export const useUserTransactions = () => {
-  const { token } = useAuthStore();
-  const { user, loading: userLoading, error: userError } = useUser();
+export const useUserTransactions = (reloadKey?: number) => {
+  const { user, token } = useAuthStore();
+  const userLoading = !user;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,11 +60,11 @@ export const useUserTransactions = () => {
     };
 
     fetchTransactions();
-  }, [token, user?.wallet_address, userLoading]);
+  }, [token, user?.wallet_address, userLoading, reloadKey]);
 
   return {
     transactions,
     loading: loading || userLoading,
-    error: fetchError || userError,
+    error: fetchError,
   };
 };
