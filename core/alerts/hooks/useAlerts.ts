@@ -38,5 +38,6 @@ export const useAlerts = () => {
     fetchAlerts();
   }, [token]);
 
-  return { alerts, loading, error };
+  const criticalCount = alerts.filter((a) => a.type === "critical").length;
+  return { alerts, loading, error, criticalCount };
 };

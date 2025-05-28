@@ -3,11 +3,15 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, usePathname } from "expo-router";
 import { useTheme } from "react-native-paper";
+import { useAlerts } from "@/core/alerts/hooks/useAlerts";
+import { useEffect, useState } from "react";
 
 const BottomNavBar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const theme = useTheme();
+  const { criticalCount } = useAlerts(); // ✅ Importamos el contador
+  const [hasVisitedAlerts, setHasVisitedAlerts] = useState(false);
 
   const iconColor = (route: string) =>
     pathname === route ? theme.colors.primary : "gray";
@@ -15,38 +19,52 @@ const BottomNavBar = () => {
   const iconItems = [
     { name: "home", label: "Home", route: "/" },
     { name: "search", label: "Consultar", route: "/consulta" },
-    { name: "analytics", label: "Análisis", route: "/pagina2" },
-    { name: "notifications", label: "Alertas", route: "/pagina3", badge: true },
+    { name: "notifications", label: "Alertas", route: "/alertas" },
+    { name: "analytics", label: "Análisis", route: "/pagina3" },
     { name: "settings", label: "Configuración", route: "/configuracion" },
   ];
 
-  type Route = "/" | "/consulta" | "/pagina2" | "/pagina3" | "/configuracion";
+  type Route = "/" | "/consulta" | "/alertas" | "/pagina3" | "/configuracion";
+
+  useEffect(() => {
+    if (pathname === "/alertas" && !hasVisitedAlerts) {
+      setHasVisitedAlerts(true);
+    }
+  }, [pathname]);
 
   return (
     <View style={styles.navbar}>
-      {iconItems.map((item) => (
-        <TouchableOpacity
-          key={item.route}
-          onPress={() => router.push(item.route as Route)}
-          style={styles.navItem}
-        >
-          <View style={{ position: "relative" }}>
-            <Ionicons
-              name={item.name as any}
-              size={24}
-              color={iconColor(item.route)}
-            />
-            {item.badge && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>1</Text>
-              </View>
-            )}
-          </View>
-          <Text style={[styles.label, { color: iconColor(item.route) }]}>
-            {item.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+      {iconItems.map((item) => {
+        const isActive = pathname === item.route;
+        const showBadge =
+          item.route === "/alertas" &&
+          criticalCount > 0 &&
+          !(pathname === "/alertas" || hasVisitedAlerts);
+
+        return (
+          <TouchableOpacity
+            key={item.route}
+            onPress={() => router.push(item.route as Route)}
+            style={styles.navItem}
+          >
+            <View style={{ position: "relative" }}>
+              <Ionicons
+                name={item.name as any}
+                size={24}
+                color={iconColor(item.route)}
+              />
+              {showBadge && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{criticalCount}</Text>
+                </View>
+              )}
+            </View>
+            <Text style={[styles.label, { color: iconColor(item.route) }]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
