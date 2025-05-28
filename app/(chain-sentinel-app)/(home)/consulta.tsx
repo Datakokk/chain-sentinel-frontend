@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Image,
+} from "react-native";
 import { Text, TextInput, Button, Card, Chip } from "react-native-paper";
+import { useNavigation } from "expo-router";
+import { useEffect } from "react";
+import axios from "axios";
 import { useAuthStore } from "@/presentation/auth/store/useAuthStore";
 import { useUser } from "@/core/auth/hooks/useUser";
-import axios from "axios";
 import BottomNavBar from "./components/BottomNavBar";
 import { AnalyzedTransaction } from "@/core/analysis/interface/analyzed-transaction";
 import { toAnalyzeRequestDTO } from "@/helpers/adapters/analyze-request.adapter";
@@ -16,6 +24,11 @@ const ConsultaScreen = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ title: "Consulta" });
+  }, []);
 
   const isValidHash = (value: string) =>
     /^0x[a-fA-F0-9]{64}$/.test(value.trim());
@@ -83,7 +96,13 @@ const ConsultaScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Consultar Transacción</Text>
+      <View style={styles.headerRow}>
+        <Image
+          source={require("@/assets/images/TecnologicoFuturista.png")}
+          style={styles.logoSmall}
+        />
+        <Text style={styles.brandTitle}>ChainSentinel</Text>
+      </View>
 
       {user?.wallet_address && (
         <Text style={styles.walletInfo}>Wallet: {user.wallet_address}</Text>
@@ -181,6 +200,21 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#061621",
     flexGrow: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  logoSmall: {
+    width: 100,
+    height: 100,
+  },
+  brandTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginLeft: 0,
+    color: "#00e0c6",
   },
   title: {
     fontSize: 24,
