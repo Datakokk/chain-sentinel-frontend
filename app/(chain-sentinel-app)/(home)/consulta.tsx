@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -8,13 +8,9 @@ import {
 } from "react-native";
 import { Text, TextInput, Button, Card, Chip } from "react-native-paper";
 import { useNavigation } from "expo-router";
-import { useEffect } from "react";
-import axios from "axios";
 import { useAuthStore } from "@/presentation/auth/store/useAuthStore";
 import { useUser } from "@/core/auth/hooks/useUser";
 import BottomNavBar from "./components/BottomNavBar";
-import { AnalyzedTransaction } from "@/core/analysis/interface/analyzed-transaction";
-import { toAnalyzeRequestDTO } from "@/helpers/adapters/analyze-request.adapter";
 
 const ConsultaScreen = () => {
   const { token } = useAuthStore();
@@ -56,10 +52,10 @@ const ConsultaScreen = () => {
           },
           body: JSON.stringify({
             id_transaccion: hash,
-            hash: "",
-            origin_address: user?.wallet_address || "", // o la dirección actual del usuario
-            destination_address: "", // puedes dejarlo vacío si el backend lo infiere
-            amount: 0, // opcional si el backend lo calcula
+            hash: hash,
+            origin_address: user?.wallet_address || "",
+            destination_address: "",
+            amount: 0,
             date: new Date().toISOString(),
           }),
         }
@@ -67,7 +63,12 @@ const ConsultaScreen = () => {
 
       if (!response.ok) {
         const msg = await response.text();
-        throw new Error(msg || "Error en la consulta");
+        if (response.status === 400) {
+          setError("⚠️ Hash inválido o no encontrado en la red.");
+        } else {
+          setError(msg || "Error en la consulta");
+        }
+        return;
       }
 
       const data = await response.json();
@@ -93,22 +94,10 @@ const ConsultaScreen = () => {
   };
 
   const getRiskColor = (score: number) => {
-    if (score > 80) return "#c62828"; // rojo
-    if (score >= 40) return "#ff9800"; // naranja
-    return "#2e7d32"; // verde
+    if (score > 80) return "#c62828";
+    if (score >= 40) return "#ff9800";
+    return "#2e7d32";
   };
-
-  const hashesMalos = [
-    "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdf",
-    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-    "0x1111111111111111111111111111111111111111111111111111111111111111",
-  ];
-
-  const hashesFraudulentos = [
-    "0xb5c8bd9430b6cc87a0e2fe110ece6bf527fa4f170a4bc8cd032f768fc5219838",
-    "0x9999999999999999999999999999999999999999999999999999999999999999",
-  ];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -156,10 +145,7 @@ const ConsultaScreen = () => {
         <Card
           style={[
             styles.card,
-            hashesMalos.includes(hash.toLowerCase()) && {
-              backgroundColor: "#330000",
-            },
-            hashesFraudulentos.includes(hash.toLowerCase()) && {
+            result.is_fraud && {
               borderColor: "#c62828",
               borderWidth: 2,
             },
@@ -180,32 +166,24 @@ const ConsultaScreen = () => {
               style={[
                 styles.chip,
                 {
-                  backgroundColor: hashesFraudulentos.includes(
-                    hash.toLowerCase()
-                  )
-                    ? "#c62828"
-                    : "#2e7d32",
+                  backgroundColor: result.is_fraud ? "#c62828" : "#2e7d32",
                 },
               ]}
               textStyle={{ color: "#fff" }}
             >
-              {hashesFraudulentos.includes(hash.toLowerCase())
-                ? "Inseguro"
-                : "Seguro"}
+              {result.is_fraud ? "Inseguro" : "Seguro"}
             </Chip>
 
             <Text style={styles.sectionTitle}>Detalles de la Transacción</Text>
             <Text
               style={{
-                color: hashesFraudulentos.includes(hash.toLowerCase())
-                  ? "#ff1744"
-                  : "#00e676",
+                color: result.is_fraud ? "#ff1744" : "#00e676",
                 fontSize: 22,
                 fontWeight: "bold",
                 marginBottom: 6,
               }}
             >
-              {hashesFraudulentos.includes(hash.toLowerCase())
+              {result.is_fraud
                 ? "❌ Transacción No Segura"
                 : "✅ Transacción Segura"}
             </Text>
@@ -215,7 +193,7 @@ const ConsultaScreen = () => {
               style={[
                 styles.riskLevel,
                 {
-                  color: hashesFraudulentos.includes(hash.toLowerCase())
+                  color: result.is_fraud
                     ? "#c62828"
                     : getRiskColor(result.risk_score),
                 },
@@ -228,12 +206,6 @@ const ConsultaScreen = () => {
             <Text style={styles.value}>{result.confirmations}</Text>
           </Card.Content>
         </Card>
-      )}
-
-      {result && hashesMalos.includes(hash.toLowerCase()) && (
-        <Text style={{ color: "#ff1744", fontWeight: "bold", marginTop: 12 }}>
-          ⚠️ Este hash parece inválido o no existe en la red.
-        </Text>
       )}
 
       {result && (
