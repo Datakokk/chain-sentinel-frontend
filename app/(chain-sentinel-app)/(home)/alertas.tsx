@@ -74,7 +74,7 @@ const AlertsScreen = () => {
           return (
             <Card key={index} style={styles.card}>
               <Card.Title
-                title={alert.type.toUpperCase()}
+                title={(alert.type ?? "DESCONOCIDO").toUpperCase()}
                 subtitle={`Hash: ${alert.tx_hash ?? "N/A"}`}
                 left={() => <IconButton icon={icon} iconColor={color} />}
               />
