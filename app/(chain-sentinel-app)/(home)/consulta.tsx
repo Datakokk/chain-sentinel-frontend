@@ -46,31 +46,35 @@ const ConsultaScreen = () => {
     setResult(null);
 
     try {
-      const tx: AnalyzedTransaction = {
-        hash,
-        origin: "0xabc123...",
-        destination: "0xdef456...",
-        amount: 1.25,
-        prediction_result: "not_fraud",
-        analysis_timestamp: new Date().toISOString(),
-      };
-
-      const payload = toAnalyzeRequestDTO(tx);
-      const response = await axios.post(
+      const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/v1/analyze`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id_transaccion: hash,
+            hash: "",
+            origin_address: user?.wallet_address || "", // o la dirección actual del usuario
+            destination_address: "", // puedes dejarlo vacío si el backend lo infiere
+            amount: 0, // opcional si el backend lo calcula
+            date: new Date().toISOString(),
+          }),
+        }
       );
 
-      const enrichedResult = {
-        ...response.data,
-        confirmations: Math.floor(Math.random() * 100 + 1), // simulado
-        analysis_timestamp: tx.analysis_timestamp, // mantenemos consistencia
-      };
+      if (!response.ok) {
+        const msg = await response.text();
+        throw new Error(msg || "Error en la consulta");
+      }
 
-      setResult(enrichedResult);
+      const data = await response.json();
+      setResult(data);
     } catch (err: any) {
-      setError("No se pudo analizar la transacción. Verifica el hash.");
+      console.error("Consulta error:", err);
+      setError(err.message || "Error al consultar la transacción");
     } finally {
       setLoading(false);
     }
@@ -167,6 +171,19 @@ const ConsultaScreen = () => {
             </Chip>
 
             <Text style={styles.sectionTitle}>Detalles de la Transacción</Text>
+            <Text
+              style={{
+                color:
+                  result.prediction_result === "fraud" ? "#ff1744" : "#00e676",
+                fontSize: 22,
+                fontWeight: "bold",
+                marginBottom: 6,
+              }}
+            >
+              {result.prediction_result === "fraud"
+                ? "⚠️ Transacción Sospechosa"
+                : "✅ Transacción Segura"}
+            </Text>
 
             <Text style={styles.label}>Riesgo:</Text>
             <Text
