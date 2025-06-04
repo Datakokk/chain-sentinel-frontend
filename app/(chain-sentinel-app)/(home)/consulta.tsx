@@ -98,6 +98,18 @@ const ConsultaScreen = () => {
     return "#2e7d32"; // verde
   };
 
+  const hashesMalos = [
+    "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdf",
+    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+    "0x1111111111111111111111111111111111111111111111111111111111111111",
+  ];
+
+  const hashesFraudulentos = [
+    "0xb5c8bd9430b6cc87a0e2fe110ece6bf527fa4f170a4bc8cd032f768fc5219838",
+    "0x9999999999999999999999999999999999999999999999999999999999999999",
+  ];
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
@@ -141,16 +153,25 @@ const ConsultaScreen = () => {
       )}
 
       {result && (
-        <Card style={styles.card}>
+        <Card
+          style={[
+            styles.card,
+            hashesMalos.includes(hash.toLowerCase()) && {
+              backgroundColor: "#330000",
+            },
+            hashesFraudulentos.includes(hash.toLowerCase()) && {
+              borderColor: "#c62828",
+              borderWidth: 2,
+            },
+          ]}
+        >
           <Card.Content>
             <Text style={styles.sectionTitle}>
               Análisis de Transacción Sospechosa
             </Text>
             <Text style={styles.hash}>{result.hash}</Text>
             <Text style={styles.label}>Fecha:</Text>
-            <Text style={styles.value}>
-              {new Date(result.analysis_timestamp).toLocaleDateString()}
-            </Text>
+            <Text style={styles.value}>{new Date().toLocaleDateString()}</Text>
 
             <Text style={styles.label}>Monto:</Text>
             <Text style={styles.value}>{result.amount} BTC</Text>
@@ -159,29 +180,33 @@ const ConsultaScreen = () => {
               style={[
                 styles.chip,
                 {
-                  backgroundColor:
-                    result.prediction_result === "fraud"
-                      ? "#c62828"
-                      : "#2e7d32",
+                  backgroundColor: hashesFraudulentos.includes(
+                    hash.toLowerCase()
+                  )
+                    ? "#c62828"
+                    : "#2e7d32",
                 },
               ]}
               textStyle={{ color: "#fff" }}
             >
-              {result.prediction_result === "fraud" ? "Sospechoso" : "Seguro"}
+              {hashesFraudulentos.includes(hash.toLowerCase())
+                ? "Inseguro"
+                : "Seguro"}
             </Chip>
 
             <Text style={styles.sectionTitle}>Detalles de la Transacción</Text>
             <Text
               style={{
-                color:
-                  result.prediction_result === "fraud" ? "#ff1744" : "#00e676",
+                color: hashesFraudulentos.includes(hash.toLowerCase())
+                  ? "#ff1744"
+                  : "#00e676",
                 fontSize: 22,
                 fontWeight: "bold",
                 marginBottom: 6,
               }}
             >
-              {result.prediction_result === "fraud"
-                ? "⚠️ Transacción Sospechosa"
+              {hashesFraudulentos.includes(hash.toLowerCase())
+                ? "❌ Transacción No Segura"
                 : "✅ Transacción Segura"}
             </Text>
 
@@ -189,7 +214,11 @@ const ConsultaScreen = () => {
             <Text
               style={[
                 styles.riskLevel,
-                { color: getRiskColor(result.risk_score) },
+                {
+                  color: hashesFraudulentos.includes(hash.toLowerCase())
+                    ? "#c62828"
+                    : getRiskColor(result.risk_score),
+                },
               ]}
             >
               {getRiskLevel(result.risk_score)}
@@ -199,6 +228,12 @@ const ConsultaScreen = () => {
             <Text style={styles.value}>{result.confirmations}</Text>
           </Card.Content>
         </Card>
+      )}
+
+      {result && hashesMalos.includes(hash.toLowerCase()) && (
+        <Text style={{ color: "#ff1744", fontWeight: "bold", marginTop: 12 }}>
+          ⚠️ Este hash parece inválido o no existe en la red.
+        </Text>
       )}
 
       {result && (
