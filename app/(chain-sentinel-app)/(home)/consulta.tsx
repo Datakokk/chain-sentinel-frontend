@@ -30,6 +30,12 @@ const ConsultaScreen = () => {
     /^0x[a-fA-F0-9]{64}$/.test(value.trim());
 
   const handleConsulta = async () => {
+    if (!user || !user.wallet_address) {
+      setError("⚠️ Espera a que se cargue el usuario o revisa tu wallet.");
+      console.warn("⚠️ user o wallet_address no disponibles", user);
+      return;
+    }
+
     if (!isValidHash(hash)) {
       setError(
         "El hash debe tener formato válido (0x + 64 caracteres hexadecimales)"
@@ -40,6 +46,12 @@ const ConsultaScreen = () => {
     setLoading(true);
     setError("");
     setResult(null);
+
+    console.log("📤 Enviando consulta con:", {
+      token,
+      user,
+      hash,
+    });
 
     try {
       const response = await fetch(
@@ -53,9 +65,9 @@ const ConsultaScreen = () => {
           body: JSON.stringify({
             id_transaccion: hash,
             hash: hash,
-            origin_address: user?.wallet_address || "",
-            destination_address: "",
-            amount: 0,
+            origin_address: user.wallet_address,
+            destination_address: "", // podrías permitir ingresar también
+            amount: 0, // usa un valor mayor a 10000 para disparar alerta de prueba
             date: new Date().toISOString(),
           }),
         }
@@ -71,11 +83,12 @@ const ConsultaScreen = () => {
         return;
       }
 
-      const data = await response.json();
-      setResult(data);
+      const json = await response.json();
+      console.log("📬 Resultado de análisis:", json);
+      setResult(json);
     } catch (err: any) {
-      console.error("Consulta error:", err);
-      setError(err.message || "Error al consultar la transacción");
+      console.error("❌ Error al consultar:", err.message);
+      setError("Ocurrió un error al hacer la consulta.");
     } finally {
       setLoading(false);
     }
