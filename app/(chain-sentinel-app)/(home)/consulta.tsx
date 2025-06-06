@@ -17,6 +17,8 @@ const ConsultaScreen = () => {
   const { user } = useUser();
 
   const [hash, setHash] = useState("");
+  const [originAddress, setOriginAddress] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
@@ -65,7 +67,8 @@ const ConsultaScreen = () => {
           body: JSON.stringify({
             id_transaccion: hash,
             hash: hash,
-            origin_address: user.wallet_address,
+            origin_address:
+              originAddress.trim().toLowerCase() || user.wallet_address,
             destination_address: "", // podrías permitir ingresar también
             amount: 0, // usa un valor mayor a 10000 para disparar alerta de prueba
             date: new Date().toISOString(),
@@ -96,6 +99,7 @@ const ConsultaScreen = () => {
 
   const handleReset = () => {
     setHash("");
+    setOriginAddress("");
     setResult(null);
     setError("");
   };
@@ -133,6 +137,15 @@ const ConsultaScreen = () => {
         mode="outlined"
         style={styles.input}
         placeholder="Ej: 0x..."
+      />
+
+      <TextInput
+        label="Dirección de origen (opcional)"
+        value={originAddress}
+        onChangeText={setOriginAddress}
+        mode="outlined"
+        style={styles.input}
+        placeholder={`Por defecto: ${user?.wallet_address || "no disponible"}`}
       />
 
       <Button

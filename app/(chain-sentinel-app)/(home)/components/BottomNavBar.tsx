@@ -20,11 +20,10 @@ const BottomNavBar = () => {
     { name: "home", label: "Home", route: "/" },
     { name: "search", label: "Consultar", route: "/consulta" },
     { name: "notifications", label: "Alertas", route: "/alertas" },
-    { name: "analytics", label: "Análisis", route: "/pagina3" },
     { name: "settings", label: "Configuración", route: "/configuracion" },
   ];
 
-  type Route = "/" | "/consulta" | "/alertas" | "/pagina3" | "/configuracion";
+  type Route = "/" | "/consulta" | "/alertas" | "/configuracion";
 
   useEffect(() => {
     if (pathname === "/alertas" && !hasVisitedAlerts) {
