@@ -1,54 +1,123 @@
-# Welcome to your Expo app 👋
+# ChainSentinel Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**ChainSentinel** is a mobile application built with [Expo](https://expo.dev) and React Native. It offers intelligent monitoring and detection of fraudulent activity in blockchain transactions.
 
-## Get started
+This project is part of a complete system including a FastAPI backend and Firebase authentication.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 🚀 Features
 
-2. Clone .env.template to .env and change the ip address
+- 🔒 User authentication via Firebase (register, login, logout)
+- 📊 Real-time transaction risk analysis
+- 🧠 Integration with machine learning API for fraud detection
+- ⚠️ Security alerts for suspicious addresses
+- 📱 Clean and intuitive UI with bottom navigation
+- 📝 Settings screen with:
+  - Name, email, and password update
+  - Firebase Auth + Firestore sync
+- 🧪 File-based routing using `expo-router`
 
-3. Start the app
+---
 
-   ```bash
-    npx expo start
-   ```
+## 📁 Project Structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+app/
+├── _layout.tsx
+├── (chain-sentinel-app)/
+│   ├── _layout.tsx
+│   └── (home)/
+│       ├── index.tsx            # Home: recent activity + transactions
+│       ├── consulta.tsx         # Query screen for transaction/address
+│       ├── alertas.tsx          # Alerts for suspicious addresses
+│       ├── configuracion.tsx    # User settings and logout
+│       ├── pagina3.tsx          # Placeholder screen
+│       └── components/
+│           └── BottomNavBar.tsx
+├── auth/
+│   ├── login/
+│   │   └── index.tsx
+│   └── register/
+│       └── index.tsx
+assets/
+├── fonts/                       # Custom fonts (Kanit, SpaceMono)
+├── images/                      # App icons and logo
+core/
+└── auth/
+    └── firebaseConfig.ts        # Firebase app + auth + Firestore
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 🛠️ Getting Started
 
-To learn more about developing your project with Expo, look at the following resources:
+### 1. Install dependencies
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
+```
 
-## Join the community
+### 2. Configure environment
 
-Join our community of developers creating universal apps.
+Clone `.env.template` and rename it to `.env`, then set your Firebase keys and backend IP:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+cp .env.template .env
+```
 
-# chain-sentinel-frontend
+Update `EXPO_PUBLIC_API_BASE_URL` with your local or production IP address.
+
+### 3. Start the development server
+
+```bash
+npx expo start
+```
+
+Then choose one of the following:
+
+- Open in a **Development Build**
+- Use **Expo Go** on your phone
+- Launch an **Android Emulator** or **iOS Simulator**
+
+---
+
+## 🧪 Available Scripts
+
+| Command                 | Description             |
+| ----------------------- | ----------------------- |
+| `npx expo start`        | Start Metro bundler     |
+| `npm run reset-project` | Reset to blank template |
+
+---
+
+## 📷 Assets & Design
+
+- App logo: `assets/images/TecnologicoFuturista.png`
+- UI design: Inspired by futuristic blockchain themes
+- Navigation: Tab-based with consistent styling
+
+---
+
+## 🔐 Authentication
+
+This project uses **Firebase Authentication**:
+
+- Email/password login
+- Update email and password from settings screen
+- User profile name stored in **Firestore**
+
+---
+
+## 📚 Learn More
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Paper](https://callstack.github.io/react-native-paper/)
+- [Firebase for Web (v9)](https://firebase.google.com/docs/web/setup)
+- [Expo Router](https://expo.github.io/router/docs)
+
+---
+
+## 🧠 Credits
+
+This app is part of the **ChainSentinel** project: a secure and intelligent blockchain fraud detection system with backend API, ML microservice, and mobile frontend.
