@@ -137,15 +137,19 @@ const ConsultaScreen = () => {
         mode="outlined"
         style={styles.input}
         placeholder="Ej: 0x..."
+        placeholderTextColor="#666666"
+        textColor="#222"
       />
 
       <TextInput
-        label="Dirección de origen (opcional)"
+        label="Dirección"
         value={originAddress}
         onChangeText={setOriginAddress}
         mode="outlined"
         style={styles.input}
         placeholder={`Por defecto: ${user?.wallet_address || "no disponible"}`}
+        placeholderTextColor="#666666"
+        textColor="#222"
       />
 
       <Button
