@@ -4,9 +4,9 @@ import {
   useWindowDimensions,
   View,
   ScrollView,
-  Alert,
 } from "react-native";
 import { router } from "expo-router";
+import { Snackbar } from "react-native-paper";
 
 import { ThemedText } from "@/presentation/theme/components/ThemedText";
 import ThemedTextInput from "@/presentation/theme/components/ThemedTextInput";
@@ -22,25 +22,65 @@ const LoginScreen = () => {
 
   const [isPosting, setIsPosting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [formErrors, setFormErrors] = useState({ email: "", password: "" });
+
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const validateForm = () => {
+    const { email, password } = form;
+    const errors: any = {};
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      errors.email = "Correo electrónico inválido.";
+    }
+
+    if (password.length < 6) {
+      errors.password = "La contraseña debe tener al menos 6 caracteres.";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const onLogin = async () => {
-    const { email, password } = form;
-
-    if (email.length === 0 || form.password.length === 0) {
+    const isValid = validateForm();
+    if (!isValid) {
+      setSnackbarMessage("Corrige los errores del formulario.");
+      setSnackbarVisible(true);
       return;
     }
-    console.log(email, password);
+
     setIsPosting(true);
-    const wasSuccessful = await login(email, password);
+    const wasSuccessful = await login(form.email, form.password);
     setIsPosting(false);
 
     if (wasSuccessful) {
-      // Navigate to the home screen
       router.replace("/");
-      return;
+    } else {
+      setSnackbarMessage("Usuario o contraseña incorrectos");
+      setSnackbarVisible(true);
     }
+  };
 
-    Alert.alert("Error", "Usuairo o contraseña incorrectos");
+  const validateField = (field: string, value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    switch (field) {
+      case "email":
+        if (!emailRegex.test(value)) {
+          return "Correo electrónico inválido.";
+        }
+        break;
+      case "password":
+        if (value.length < 6) {
+          return "La contraseña debe tener al menos 6 caracteres.";
+        }
+        break;
+    }
+    return "";
   };
 
   return (
@@ -48,18 +88,14 @@ const LoginScreen = () => {
       <ScrollView
         style={{ paddingHorizontal: 40, backgroundColor: backgroundColor }}
       >
-        <View
-          style={{
-            paddingTop: height * 0.35,
-          }}
-        >
+        <View style={{ paddingTop: height * 0.35 }}>
           <ThemedText type="title">Ingresar</ThemedText>
           <ThemedText style={{ color: "grey" }}>
             Por favor ingrese para continuar
           </ThemedText>
         </View>
 
-        {/**Email and Password */}
+        {/* Email and Password */}
         <View style={{ marginTop: 20 }}>
           <ThemedTextInput
             placeholder="Correo electrónico"
@@ -67,7 +103,15 @@ const LoginScreen = () => {
             autoCapitalize="none"
             icon="mail-outline"
             value={form.email}
-            onChangeText={(text) => setForm({ ...form, email: text })}
+            onChangeText={(text) => {
+              setForm({ ...form, email: text });
+              setFormErrors((prev) => ({
+                ...prev,
+                email: validateField("email", text),
+              }));
+            }}
+            error={!!formErrors.email}
+            helperText={formErrors.email}
           />
 
           <ThemedTextInput
@@ -76,26 +120,36 @@ const LoginScreen = () => {
             autoCapitalize="none"
             icon="lock-closed-outline"
             value={form.password}
-            onChangeText={(text) => setForm({ ...form, password: text })}
+            onChangeText={(text) => {
+              setForm({ ...form, password: text });
+              setFormErrors((prev) => ({
+                ...prev,
+                password: validateField("password", text),
+              }));
+            }}
+            error={!!formErrors.password}
+            helperText={formErrors.password}
           />
         </View>
 
-        {/* Space */}
         <View style={{ marginTop: 20 }} />
 
-        {/* Button */}
         <ThemedButton
           icon="arrow-forward-outline"
           onPress={onLogin}
-          disabled={isPosting}
+          disabled={
+            isPosting ||
+            !form.email ||
+            !form.password ||
+            !!formErrors.email ||
+            !!formErrors.password
+          }
         >
           Ingresar
         </ThemedButton>
 
-        {/* Space */}
         <View style={{ marginTop: 50 }} />
 
-        {/* Registry link */}
         <View
           style={{
             flexDirection: "row",
@@ -108,6 +162,18 @@ const LoginScreen = () => {
             Crear cuenta
           </ThemedLink>
         </View>
+
+        <Snackbar
+          visible={snackbarVisible}
+          onDismiss={() => setSnackbarVisible(false)}
+          duration={2500}
+          action={{
+            label: "OK",
+            onPress: () => setSnackbarVisible(false),
+          }}
+        >
+          {snackbarMessage}
+        </Snackbar>
       </ScrollView>
     </KeyboardAvoidingView>
   );

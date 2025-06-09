@@ -4,9 +4,9 @@ import {
   useWindowDimensions,
   View,
   ScrollView,
-  Alert,
 } from "react-native";
 import { router } from "expo-router";
+import { Snackbar } from "react-native-paper";
 
 import { ThemedText } from "@/presentation/theme/components/ThemedText";
 import ThemedTextInput from "@/presentation/theme/components/ThemedTextInput";
@@ -22,26 +22,68 @@ const RegisterScreen = () => {
 
   const { changeStatus } = useAuthStore();
   const [isPosting, setIsPosting] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     password: "",
   });
 
-  const onRegister = async () => {
-    const { email, password } = form;
+  const [formErrors, setFormErrors] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
 
-    if (email.length === 0 || password.length === 0) return;
+  const validateForm = () => {
+    const { fullName, email, password } = form;
+    const errors: any = {};
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+    if (fullName.trim().length < 3) {
+      errors.fullName = "El nombre debe tener al menos 3 caracteres.";
+    }
+
+    if (!emailRegex.test(email)) {
+      errors.email = "El correo electrónico no es válido.";
+    }
+
+    if (!passwordRegex.test(password)) {
+      errors.password =
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const onRegister = async () => {
+    const isValid = validateForm();
+    if (!isValid) {
+      setSnackbarMessage("Corrige los errores del formulario.");
+      setSnackbarVisible(true);
+      return;
+    }
 
     setIsPosting(true);
-    const resp = await authRegister(email, password);
+    const resp = await authRegister(form.email, form.password);
     setIsPosting(false);
 
     if (resp) {
+      setSnackbarMessage("Usuario creado exitosamente");
+      setSnackbarVisible(true);
       await changeStatus(resp.token, resp.user);
-      router.replace("/auth/login");
+
+      setTimeout(() => {
+        router.replace("/auth/login");
+      }, 1500);
     } else {
-      Alert.alert("Error", "No se pudo crear la cuenta.");
+      setSnackbarMessage("No se pudo crear la cuenta.");
+      setSnackbarVisible(true);
     }
   };
 
@@ -50,18 +92,12 @@ const RegisterScreen = () => {
       <ScrollView
         style={{ paddingHorizontal: 40, backgroundColor: backgroundColor }}
       >
-        <View
-          style={{
-            paddingTop: height * 0.35,
-          }}
-        >
+        <View style={{ paddingTop: height * 0.35 }}>
           <ThemedText type="title">Crear cuenta</ThemedText>
           <ThemedText style={{ color: "grey" }}>
             Por favor crea una cuenta para continuar
           </ThemedText>
         </View>
-
-        {/**Email and Password */}
 
         <View style={{ marginTop: 20 }}>
           <ThemedTextInput
@@ -70,6 +106,8 @@ const RegisterScreen = () => {
             icon="person-outline"
             value={form.fullName}
             onChangeText={(text) => setForm({ ...form, fullName: text })}
+            error={!!formErrors.fullName}
+            helperText={formErrors.fullName}
           />
 
           <ThemedTextInput
@@ -79,6 +117,8 @@ const RegisterScreen = () => {
             icon="mail-outline"
             value={form.email}
             onChangeText={(text) => setForm({ ...form, email: text })}
+            error={!!formErrors.email}
+            helperText={formErrors.email}
           />
 
           <ThemedTextInput
@@ -88,13 +128,13 @@ const RegisterScreen = () => {
             icon="lock-closed-outline"
             value={form.password}
             onChangeText={(text) => setForm({ ...form, password: text })}
+            error={!!formErrors.password}
+            helperText={formErrors.password}
           />
         </View>
 
-        {/* Space */}
         <View style={{ marginTop: 20 }} />
 
-        {/* Button */}
         <ThemedButton
           icon="arrow-forward-outline"
           onPress={onRegister}
@@ -103,10 +143,8 @@ const RegisterScreen = () => {
           Crear cuenta
         </ThemedButton>
 
-        {/* Space */}
         <View style={{ marginTop: 50 }} />
 
-        {/* Registry link */}
         <View
           style={{
             flexDirection: "row",
@@ -119,6 +157,18 @@ const RegisterScreen = () => {
             Ingresar
           </ThemedLink>
         </View>
+
+        <Snackbar
+          visible={snackbarVisible}
+          onDismiss={() => setSnackbarVisible(false)}
+          duration={2500}
+          action={{
+            label: "OK",
+            onPress: () => setSnackbarVisible(false),
+          }}
+        >
+          {snackbarMessage}
+        </Snackbar>
       </ScrollView>
     </KeyboardAvoidingView>
   );
